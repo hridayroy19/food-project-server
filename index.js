@@ -26,6 +26,30 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
+
+const menuCollections = client.db("foodapps").collection("menu");
+const cartMenuCollections = client.db("foodapps").collection("cartItem")
+
+
+// all menu get api 
+app.get("/menu", async (req , res)=>{
+    const result = await menuCollections.find().toArray()
+    res.send(result)
+})
+
+// add cart time post api
+
+ app.post("/addCart", async (req , res)=>{
+  const cartItem = req.body;
+  const result = await cartMenuCollections.insertOne(cartItem);
+  res.send(result);
+ })
+
+
+
+
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
