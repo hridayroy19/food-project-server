@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jg43ilw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -45,7 +45,34 @@ app.get("/menu", async (req , res)=>{
   res.send(result);
  })
 
+// get gamil same api in cart items 
 
+app.get("/addCart", async(req,res)=>{
+  const email = req.query.email;
+  const filter = {email:email};
+  const result = await cartMenuCollections.find(filter).toArray()
+  res.send(result);
+})
+
+
+// get cart id spacify
+app.get("/addCart/:id", async (req , res)=>{
+  const id = req.params.id;
+  const filter = {_id: new ObjectId(id)};
+  const result = await cartMenuCollections.findOne(filter);
+  res.send(result)
+})
+
+
+// add cart delet get id 
+
+app.delete("/addCart/:id", async (req, res)=>{
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id)};
+  const result = await cartMenuCollections.deleteOne(filter);
+  res.send(result)
+
+})
 
 
 
