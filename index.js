@@ -74,11 +74,14 @@ async function run() {
       }
 
 
-    app.get("/user", verifyToken, async (req, res) => {
-      const result = await userCollections.find().toArray();
-      res.send(result);
-    });
 
+    // post all user
+app.post('/user',async(req , res)=>{
+ const userItem = req.body;
+ const result = await userCollections.insertOne(userItem);
+ res.send(result)
+
+})
     // all menu get api
     app.get("/menu", async (req, res) => {
       const result = await menuCollections.find().toArray();
@@ -95,7 +98,7 @@ async function run() {
 
     // get gamil same api in cart items
 
-    app.get("/addCart", async (req, res) => {
+    app.get("/addCart",  async (req, res) => {
       const email = req.query.email;
       const filter = { email: email };
       const result = await cartMenuCollections.find(filter).toArray();
@@ -133,6 +136,57 @@ async function run() {
       };
       const result = await cartMenuCollections.updateOne(filter, updateDoc, options);
     });
+
+
+
+// get all user 
+app.get("/users",  async (req, res) => {
+  const result = await userCollections.find().toArray();
+  res.send(result);
+});
+
+// user admine
+
+app.get('/users/admin/:email', async (req, res) => {
+  const email = req.params.email;
+  if (email !== req.decoded.email) {
+    return res.status(403).send({ message: ' note access' })
+  }
+  const query = { email: email };
+  const user = await userCollections.findOne(query);
+  let admin = false;
+  if (user) {
+    admin = user?.role === 'admin';
+  }
+  res.send({ admin });
+})
+
+
+// user roll update
+app.patch('/users/admin/:id', async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const updatedDoc = {
+    $set: {
+      role: 'admin'
+    }
+  }
+  const result = await userCollections.updateOne(filter, updatedDoc);
+  res.send(result);
+})
+
+// user deleted
+
+app.delete('/users/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) }
+  const result = await userCollections.deleteOne(query);
+  res.send(result);
+})
+
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
