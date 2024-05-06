@@ -74,17 +74,15 @@ async function run() {
       }
 
 
-
-    // post all user
-app.post('/user',async(req , res)=>{
- const userItem = req.body;
- const result = await userCollections.insertOne(userItem);
- res.send(result)
-
-})
     // all menu get api
     app.get("/menu", async (req, res) => {
       const result = await menuCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/menu", async (req, res) => {
+      const menuitems = req.body;
+      const result = await menuCollections.insertOne(menuitems)
       res.send(result);
     });
 
@@ -115,7 +113,7 @@ app.post('/user',async(req , res)=>{
 
     // add cart delet get id
 
-    app.delete("/addCart/:id", async (req, res) => {
+    app.delete("/addCart/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await cartMenuCollections.deleteOne(filter);
@@ -137,21 +135,37 @@ app.post('/user',async(req , res)=>{
       const result = await cartMenuCollections.updateOne(filter, updateDoc, options);
     });
 
-
+// verifyAdmine 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollections.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
 
 // get all user 
-app.get("/users",  async (req, res) => {
+app.get("/users",verifyToken,   async (req, res) => {
   const result = await userCollections.find().toArray();
   res.send(result);
 });
 
-// user admine
+    // post all user
+    app.post('/user',async(req , res)=>{
+      const userItem = req.body;
+      const result = await userCollections.insertOne(userItem);
+      res.send(result)
+     
+     })
+// user admine   // if (email !== req.decoded.email) {
+  //   return res.status(403).send({ message: ' note access' })
+  // }
 
-app.get('/users/admin/:email', async (req, res) => {
+app.get('/users/admin/:email', verifyToken, async (req, res) => {
   const email = req.params.email;
-  if (email !== req.decoded.email) {
-    return res.status(403).send({ message: ' note access' })
-  }
   const query = { email: email };
   const user = await userCollections.findOne(query);
   let admin = false;
@@ -160,7 +174,6 @@ app.get('/users/admin/:email', async (req, res) => {
   }
   res.send({ admin });
 })
-
 
 // user roll update
 app.patch('/users/admin/:id', async (req, res) => {
@@ -183,8 +196,6 @@ app.delete('/users/:id', async (req, res) => {
   const result = await userCollections.deleteOne(query);
   res.send(result);
 })
-
-
 
 
 
