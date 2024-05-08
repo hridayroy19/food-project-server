@@ -4,7 +4,7 @@ const cors = require("cors");
 // const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');  
 require("dotenv").config();
-const port = process.env.PORT || 6001;
+const port = process.env.PORT || 6002;
 
 // medilware
 app.use(cors());
@@ -42,7 +42,7 @@ async function run() {
     await client.connect();
     // Send a ping to confirm a successful connection
 
-    const menuCollections = client.db("foodapps").collection("menu");
+    const menuCollections = client.db("foodapps").collection("menus");
     const cartMenuCollections = client.db("foodapps").collection("cartItem");
     const userCollections = client.db("foodapps").collection("user");
 
@@ -63,16 +63,31 @@ async function run() {
         return res.status(401).send({message:"unauthorixed access"});
       }
        const token = req.headers.authorization.split(' ')[1];
+      //  console.log(token,"hello token");
 
        jwt.verify(token,process.env.VERYF_ACCESS_TOKEN,(err, decoded)=>{
         if(err){
           return res.status(401).send({message:"token invalid!"})
         }
-        res.decoded = decoded;
+        req.user = decoded?.email;
+        // console.log(req);
         next();
        });
       }
 
+
+      // verifyAdmine 
+    const verifyAdmin =  async (req, res, next) => {
+      const email = req.user;
+      // console.log(email,"get email");
+      const query = { email: email };
+      const user = await userCollections.findOne(query);
+      const isAdmin = user?.role === 'admin';
+      if (!isAdmin) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+      next();
+    }
 
     // all menu get api
     app.get("/menu", async (req, res) => {
@@ -85,6 +100,25 @@ async function run() {
       const result = await menuCollections.insertOne(menuitems)
       res.send(result);
     });
+
+    // app.delete("/menu/:id",async (req, res) => {
+    //   const id = req.params.id;
+    //   const filter = { _id: new ObjectId(id) };
+    //   const result = await menuCollections.deleteOne(filter);
+    //   res.send(result);
+    // });
+
+    app.delete('/menu/:id', verifyToken,verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: id}
+      const result = await menuCollections.deleteOne(query);
+      console.log(result);
+      res.send(result);
+    })
+    
+  
+    
 
     // add cart time post api
 
@@ -135,20 +169,10 @@ async function run() {
       const result = await cartMenuCollections.updateOne(filter, updateDoc, options);
     });
 
-// verifyAdmine 
-    const verifyAdmin = async (req, res, next) => {
-      const email = req.decoded.email;
-      const query = { email: email };
-      const user = await userCollections.findOne(query);
-      const isAdmin = user?.role === 'admin';
-      if (!isAdmin) {
-        return res.status(403).send({ message: 'forbidden access' });
-      }
-      next();
-    }
+
 
 // get all user 
-app.get("/users",verifyToken,   async (req, res) => {
+app.get("/users",verifyToken, verifyAdmin, async (req, res) => {
   const result = await userCollections.find().toArray();
   res.send(result);
 });
