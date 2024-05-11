@@ -67,7 +67,6 @@ async function run() {
           return res.status(401).send({ message: "token invalid!" });
         }
         req.user = decoded?.email;
-        // console.log(req);
         next();
       });
     };
