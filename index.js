@@ -61,7 +61,6 @@ async function run() {
         return res.status(401).send({ message: "unauthorixed access" });
       }
       const token = req.headers.authorization.split(" ")[1];
-      //  console.log(token,"hello token");
 
       jwt.verify(token, process.env.VERYF_ACCESS_TOKEN, (err, decoded) => {
         if (err) {
@@ -122,8 +121,8 @@ async function run() {
           { _id: menuId },
           { $set: { name, recipe, image, category, price } }, 
           { runValidators: true } 
-        );
-        console.log(updatedMenu);
+        ); 
+        // console.log(updatedMenu);
         if (updatedMenu.nModified === 0) {
           return res.status(404).json({ message: "Menu not found" });
         }
