@@ -121,7 +121,7 @@ async function run() {
           { $set: { name, recipe, image, category, price } }, 
           { runValidators: true } 
         ); 
-        // console.log(updatedMenu);
+
         if (updatedMenu.nModified === 0) {
           return res.status(404).json({ message: "Menu not found" });
         }
@@ -197,9 +197,7 @@ async function run() {
       const result = await userCollections.insertOne(userItem);
       res.send(result);
     });
-    // user admine   // if (email !== req.decoded.email) {
-    //   return res.status(403).send({ message: ' note access' })
-    // }
+
 
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
