@@ -5,6 +5,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 6001;
+const stripe = require("stripe")(process.env.STRIPE_SECRITE_KEY);
 
 // medilware
 app.use(cors());
@@ -231,6 +232,29 @@ async function run() {
       const result = await userCollections.deleteOne(query);
       res.send(result);
     });
+
+
+
+
+    app.post("/create-payment", async (req, res) => {
+      const {price} = req.body;
+      const amount = price*100
+
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+      payment_method_types: ['card']
+
+      });
+    
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
