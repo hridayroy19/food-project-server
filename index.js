@@ -44,6 +44,7 @@ async function run() {
     const menuCollections = client.db("foodapps").collection("menus");
     const cartMenuCollections = client.db("foodapps").collection("cartItem");
     const userCollections = client.db("foodapps").collection("user");
+    const paymentCollections = client.db("foodapps").collection("payment");
 
     // jwt authication
     app.post("/jwt", async (req, res) => {
@@ -99,7 +100,7 @@ async function run() {
 
     app.get("/menu/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: id };
+      const filter = { _id: new ObjectId (id) };
       const result = await menuCollections.findOne(filter);
       res.send(result);
     });
@@ -107,7 +108,7 @@ async function run() {
     app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       console.log(id);
-      const query = { _id: id };
+      const query = { _id: new ObjectId (id) };
       const result = await menuCollections.deleteOne(query);
       console.log(result);
       res.send(result);
@@ -160,7 +161,7 @@ async function run() {
 
     // add cart delet get id
 
-    app.delete("/addCart/:id", verifyToken, async (req, res) => {
+    app.delete("/addCart/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await cartMenuCollections.deleteOne(filter);
@@ -253,7 +254,43 @@ async function run() {
       });
     });
 
+    // payment menu items data info
+    // app.post("/payment", async(req,res)=>{
+    //   const payment = req.body
+    //   const result = await paymentCollections.insertOne(payment);
+    //   const cartIds = payment.cartItem.map(id => new ObjectId (id))
+    //   const deleteCartRequst = await cartMenuCollections.deleteMany({_id:{$in:cartIds}})
+    //   res.send(result , deleteCartRequst)
+    // })
+  
+    // app.post('/payments', async (req, res) => {
+    //   const payment = req.body;
+    //   const result = await paymentCollections.insertOne(payment);
+    //   console.log('payment info', payment);
+    //   const query = {
+    //     _id: {
+    //       $in: payment.menuItem.map(id => new ObjectId(id))
+    //     }};
+    
+    // const itemsDelete = await cartMenuCollections.deleteMany(query)
+    //   res.send({result , itemsDelete})
+    //   });
+    
 
+    // app.post('/payments', async (req, res) => {
+    //   const payment = req.body;
+    //   const result = await paymentCollections.insertOne(payment);
+    //   console.log('payment info', payment);
+    //   const query = {
+    //     _id: {
+    //       $in: payment.menuItem?.map(id => new ObjectId(id))
+    //     }};
+    // console.log(query, 'helllllllllllll');
+    // const itemsDelete = await cartMenuCollections.deleteMany(query)
+    //   res.send({result,itemsDelete})
+    //   });
+    
+   
 
 
     await client.db("admin").command({ ping: 1 });
