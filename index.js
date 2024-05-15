@@ -4,8 +4,6 @@ const cors = require("cors");
 // const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { ObjectId } = require('bson');
-
 const port = process.env.PORT || 6001;
 const stripe = require("stripe")(process.env.STRIPE_SECRITE_KEY);
 
@@ -26,7 +24,7 @@ app.use(express.json());
 // app.use('/menu', menuRouters);
 // app.use('/addCart',cartRoutes);
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jg43ilw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -251,55 +249,21 @@ async function run() {
       });
     });
 
-    // payment menu items data info
-    // app.post("/payment", async(req,res)=>{
-    //   const payment = req.body
-    //   const result = await paymentCollections.insertOne(payment);
-    //   const cartIds = payment.cartItem.map(id => new ObjectId (id))
-    //   const deleteCartRequst = await cartMenuCollections.deleteMany({_id:{$in:cartIds}})
-    //   res.send(result , deleteCartRequst)
-    // })
 
-    // app.post('/payments', async (req, res) => {
-    //   const payment = req.body;
-    //   const result = await paymentCollections.insertOne(payment);
-    //   console.log('payment info', payment);
-    //   const query = {
-    //     _id: {
-    //       $in: payment.menuItem.map(id => new ObjectId(id))
-    //     }};
-
-    // const itemsDelete = await cartMenuCollections.deleteMany(query)
-    //   res.send({result , itemsDelete})
-    //   });
-
-    // app.post('/payments', async (req, res) => {
-    //   const payment = req.body;
-    //   const result = await paymentCollections.insertOne(payment);
-    //   console.log('payment info', payment);
-    //   const query = {
-    //     _id: {
-    //       $in: payment.menuItem?.map(id => new ObjectId(id))
-    //     }};
-    // console.log(query, 'helllllllllllll');
-    // const itemsDelete = await cartMenuCollections.deleteMany(query)
-    //   res.send({result,itemsDelete})
-    //   });
-
-    app.post("/payments", async (req, res) => {
-    try {
+    app.post('/payments', async (req, res) => {
       const payment = req.body;
       const result = await paymentCollections.insertOne(payment);
-      console.log("payment info",payment?.menuItem);
-      const query = { _id: { $in: payment?.menuItem?.map(pas => new ObjectId(pas))}}
-
-      console.log(query, "helllllllllllll");
-      // const itemsDelete = await cartMenuCollections.deleteMany(query);
-      // res.send({ result, itemsDelete });
-    } catch (error) {
-      console.log(error.message);
-    }
-    });
+      console.log('payment info', payment);
+      const query = {
+        menuItem: {
+          $in: payment?.menuItem?.map(id => {
+            return id
+          })
+        }};
+    console.log(query, 'helllllllllllll');
+    const itemsDelete = await cartMenuCollections.deleteMany(query)
+      res.send({result,itemsDelete})
+      });
 
 
 
