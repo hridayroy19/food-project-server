@@ -4,8 +4,11 @@ const cors = require("cors");
 // const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const { ObjectId } = require('bson');
+
 const port = process.env.PORT || 6001;
 const stripe = require("stripe")(process.env.STRIPE_SECRITE_KEY);
+
 
 // medilware
 app.use(cors());
@@ -23,7 +26,7 @@ app.use(express.json());
 // app.use('/menu', menuRouters);
 // app.use('/addCart',cartRoutes);
 
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jg43ilw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -100,7 +103,7 @@ async function run() {
 
     app.get("/menu/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId (id) };
+      const filter = { _id: new ObjectId(id) };
       const result = await menuCollections.findOne(filter);
       res.send(result);
     });
@@ -108,21 +111,21 @@ async function run() {
     app.delete("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       console.log(id);
-      const query = { _id: new ObjectId (id) };
+      const query = { _id: new ObjectId(id) };
       const result = await menuCollections.deleteOne(query);
       console.log(result);
       res.send(result);
     });
 
-    app.patch("/menu/:id", verifyToken,verifyAdmin, async (req, res) => {
+    app.patch("/menu/:id", verifyToken, verifyAdmin, async (req, res) => {
       const menuId = req.params.id;
       const { name, recipe, image, category, price } = req.body;
       try {
         const updatedMenu = await menuCollections.updateOne(
           { _id: menuId },
-          { $set: { name, recipe, image, category, price } }, 
-          { runValidators: true } 
-        ); 
+          { $set: { name, recipe, image, category, price } },
+          { runValidators: true }
+        );
 
         if (updatedMenu.nModified === 0) {
           return res.status(404).json({ message: "Menu not found" });
@@ -132,7 +135,6 @@ async function run() {
         res.status(500).json({ message: error.message });
       }
     });
-    
 
     // add cart time post api
 
@@ -200,7 +202,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -234,21 +235,17 @@ async function run() {
       res.send(result);
     });
 
-
-
-
     app.post("/create-payment", async (req, res) => {
-      const {price} = req.body;
-      const amount = price*100
+      const { price } = req.body;
+      const amount = price * 100;
 
       // Create a PaymentIntent with the order amount and currency
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
-      payment_method_types: ['card']
-
+        payment_method_types: ["card"],
       });
-    
+
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
@@ -262,7 +259,7 @@ async function run() {
     //   const deleteCartRequst = await cartMenuCollections.deleteMany({_id:{$in:cartIds}})
     //   res.send(result , deleteCartRequst)
     // })
-  
+
     // app.post('/payments', async (req, res) => {
     //   const payment = req.body;
     //   const result = await paymentCollections.insertOne(payment);
@@ -271,11 +268,10 @@ async function run() {
     //     _id: {
     //       $in: payment.menuItem.map(id => new ObjectId(id))
     //     }};
-    
+
     // const itemsDelete = await cartMenuCollections.deleteMany(query)
     //   res.send({result , itemsDelete})
     //   });
-    
 
     // app.post('/payments', async (req, res) => {
     //   const payment = req.body;
@@ -289,8 +285,32 @@ async function run() {
     // const itemsDelete = await cartMenuCollections.deleteMany(query)
     //   res.send({result,itemsDelete})
     //   });
+
+    app.post("/payments", async (req, res) => {
+    try {
+      const payment = req.body;
+      const result = await paymentCollections.insertOne(payment);
+      console.log("payment info",payment?.menuItem);
+      const query = { _id: { $in: payment?.menuItem?.map(pas => new ObjectId(pas))}}
+
+      console.log(query, "helllllllllllll");
+      // const itemsDelete = await cartMenuCollections.deleteMany(query);
+      // res.send({ result, itemsDelete });
+    } catch (error) {
+      console.log(error.message);
+    }
+    });
+
+
+
     
-   
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+
+
+
 
 
     await client.db("admin").command({ ping: 1 });
