@@ -265,6 +265,15 @@ async function run() {
       res.send({result,itemsDelete})
       });
 
+      // order apage api
+
+      app.get('/order', async (req, res) => {
+        const email = req.query.email;
+        const query = { email: email };
+        const result = await paymentCollections.find(query).toArray();
+        res.send(result)
+      });
+      
 
 
     
@@ -272,10 +281,6 @@ async function run() {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
-
-
-
-
 
     await client.db("admin").command({ ping: 1 });
     console.log(
