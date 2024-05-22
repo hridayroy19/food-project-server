@@ -289,8 +289,37 @@ async function run() {
         res.send(result);
       });
 
+      // update confrmed order status
 
-    
+      // app.patch('paypment/:id',async ( req , res )=>{
+      //   const payId = new ObjectId(req.params.id);
+      //   const { status} = req.body;
+      //   const confarmeUpdate = await paymentCollections.findOneAndUpdate({ _id: payId }, 
+      //   { $set: { status: 'confirmed' } }, 
+      //   { runValidators: true } 
+      // );
+      
+      //   res.send(confarmeUpdate)
+      // })
+      const { ObjectId } = require('mongodb');
+
+      app.patch('/paypment/:id', async (req, res) => {
+     
+          const payId = new ObjectId(req.params.id);
+          const { status } = req.body;
+          const confarmeUpdate = await paymentCollections.findOneAndUpdate(
+            { _id: payId }, 
+            { $set: { status: 'confirmed' } }, 
+            { new:true, runValidators: true } 
+          );
+          res.send(confarmeUpdate.value);
+      });
+      
+    // payment order delete
+
+
+
+
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
