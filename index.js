@@ -193,6 +193,15 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get('/profile', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await userCollections.find(query).toArray();
+      res.send(result)
+    });
+    
+
     // post all user
     app.post("/user", async (req, res) => {
       const userItem = req.body;
@@ -273,7 +282,12 @@ async function run() {
         const result = await paymentCollections.find(query).toArray();
         res.send(result)
       });
-      
+      // get all paypment succesfull
+
+      app.get("/payment/all", async (req, res) => {
+        const result = await paymentCollections.find().toArray();
+        res.send(result);
+      });
 
 
     
